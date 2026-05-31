@@ -8,6 +8,7 @@ next README section. No external dependencies.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 import re
 from typing import Iterable
@@ -48,8 +49,17 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
     return data
 
 
-def published_posts(paths: Iterable[Path]) -> list[Post]:
+def parse_post_date(value: str) -> datetime:
+    """Parse a Hugo frontmatter timestamp as an aware datetime."""
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def published_posts(paths: Iterable[Path], now: datetime | None = None) -> list[Post]:
     posts: list[Post] = []
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     for path in paths:
         meta = parse_frontmatter(path)
         if not meta or meta.get("draft", "false").lower() == "true":
@@ -58,11 +68,17 @@ def published_posts(paths: Iterable[Path]) -> list[Post]:
         date = meta.get("date")
         if not title or not date:
             continue
+        try:
+            published_at = parse_post_date(date)
+        except ValueError:
+            continue
+        if published_at > now:
+            continue
         posts.append(
             Post(
                 title=title,
                 slug=path.stem,
-                date=date,
+                date=published_at.isoformat(),
                 summary=meta.get("summary", "").rstrip("."),
             )
         )
