@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+import argparse
 import re
 from typing import Iterable
 
@@ -95,13 +96,7 @@ def render_post_list(posts: list[Post]) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
-    posts = published_posts(POSTS_DIR.glob("*.md"))
-    if not posts:
-        raise SystemExit("No published posts found")
-
-    readme = README.read_text(encoding="utf-8")
-    new_block = render_post_list(posts)
+def build_updated_readme(readme: str, new_block: str) -> str:
     pattern = re.compile(
         r"(I write at \*\*\[wesley\.thesisko\.com\]\(https://wesley\.thesisko\.com\)\*\*\. Recent posts:\n\n)"
         r"(?:- \[[^\n]+\n)+"
@@ -111,6 +106,31 @@ def main() -> None:
     updated, count = pattern.subn(rf"\1{new_block}\n\2", readme)
     if count != 1:
         raise SystemExit("Could not locate Recent posts block in README.md")
+    return updated
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="exit non-zero if README.md's Recent posts block is stale, without writing",
+    )
+    args = parser.parse_args()
+
+    posts = published_posts(POSTS_DIR.glob("*.md"))
+    if not posts:
+        raise SystemExit("No published posts found")
+
+    readme = README.read_text(encoding="utf-8")
+    new_block = render_post_list(posts)
+    updated = build_updated_readme(readme, new_block)
+    if args.check:
+        if updated != readme:
+            raise SystemExit("README.md Recent posts block is stale; run update_recent_posts.py")
+        print("ok README.md Recent posts block is current")
+        return
+
     README.write_text(updated, encoding="utf-8")
 
 
