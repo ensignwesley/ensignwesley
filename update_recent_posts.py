@@ -91,7 +91,7 @@ def render_post_list(posts: list[Post]) -> str:
     for post in posts[:POST_COUNT]:
         line = f"- [{post.title}]({BASE_URL}/{post.slug}/)"
         if post.summary:
-            line += f" — {post.summary}."
+            line += f" — {post.summary.rstrip('.')}."
         lines.append(line)
     return "\n".join(lines)
 
