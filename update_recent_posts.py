@@ -86,9 +86,9 @@ def published_posts(paths: Iterable[Path], now: datetime | None = None) -> list[
     return sorted(posts, key=lambda post: post.date, reverse=True)
 
 
-def render_post_list(posts: list[Post]) -> str:
+def render_post_list(posts: list[Post], count: int = POST_COUNT) -> str:
     lines = []
-    for post in posts[:POST_COUNT]:
+    for post in posts[:count]:
         line = f"- [{post.title}]({BASE_URL}/{post.slug}/)"
         if post.summary:
             line += f" — {post.summary.rstrip('.')}."
@@ -116,22 +116,46 @@ def main() -> None:
         action="store_true",
         help="exit non-zero if README.md's Recent posts block is stale, without writing",
     )
+    parser.add_argument(
+        "--posts-dir",
+        type=Path,
+        default=POSTS_DIR,
+        help=f"Hugo posts directory (default: {POSTS_DIR})",
+    )
+    parser.add_argument(
+        "--readme",
+        type=Path,
+        default=README,
+        help=f"README to update (default: {README})",
+    )
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=POST_COUNT,
+        help=f"number of recent posts to render (default: {POST_COUNT})",
+    )
     args = parser.parse_args()
+    if args.count < 1:
+        raise SystemExit("--count must be at least 1")
 
-    posts = published_posts(POSTS_DIR.glob("*.md"))
+    posts = published_posts(args.posts_dir.glob("*.md"))
     if not posts:
-        raise SystemExit("No published posts found")
+        raise SystemExit(f"No published posts found in {args.posts_dir}")
 
-    readme = README.read_text(encoding="utf-8")
-    new_block = render_post_list(posts)
+    readme = args.readme.read_text(encoding="utf-8")
+    new_block = render_post_list(posts, count=args.count)
     updated = build_updated_readme(readme, new_block)
     if args.check:
         if updated != readme:
-            raise SystemExit("README.md Recent posts block is stale; run update_recent_posts.py")
-        print("ok README.md Recent posts block is current")
+            newest = posts[0].slug
+            raise SystemExit(
+                f"{args.readme} Recent posts block is stale; expected newest post {newest}. "
+                "Run update_recent_posts.py"
+            )
+        print(f"ok {args.readme} Recent posts block is current")
         return
 
-    README.write_text(updated, encoding="utf-8")
+    args.readme.write_text(updated, encoding="utf-8")
 
 
 if __name__ == "__main__":

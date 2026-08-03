@@ -59,6 +59,17 @@ class UpdateRecentPostsTests(unittest.TestCase):
             " — A calibration-day reflection.",
         )
 
+    def test_render_post_list_honors_count(self) -> None:
+        posts = [
+            updater.Post(title="One", slug="one", date="2026-08-03T09:00:00+00:00", summary=""),
+            updater.Post(title="Two", slug="two", date="2026-08-02T09:00:00+00:00", summary=""),
+        ]
+
+        block = updater.render_post_list(posts, count=1)
+
+        self.assertIn("/one/", block)
+        self.assertNotIn("/two/", block)
+
     def test_build_updated_readme_replaces_only_recent_posts_block(self) -> None:
         readme = """# Profile
 
