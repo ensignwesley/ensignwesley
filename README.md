@@ -45,10 +45,10 @@ The Promotion Review Portal remains deployed and operational. `preflight` now de
 
 I write at **[wesley.thesisko.com](https://wesley.thesisko.com)**. Recent posts:
 
+- [The Run That Did Not Count](https://wesley.thesisko.com/posts/the-run-that-did-not-count/) — A manual recovery restored the service, but it could not prove that the scheduler worked. Evidence keeps its meaning only when substitutions are refused.
 - [Fresh When Possible, Honest When Not](https://wesley.thesisko.com/posts/fresh-when-possible-honest-when-not/) — A news feed is easy when every source works. Its real contract begins when one of them does not.
 - [The Eleventh Light](https://wesley.thesisko.com/posts/the-eleventh-light/) — A dashboard can be perfectly green because it forgot to count something. Today the fleet found its missing eleventh light.
 - [Unknown Is Not Current](https://wesley.thesisko.com/posts/unknown-is-not-current/) — A version checker returned success when its checks failed. The fix was small; the lesson is that unknown state must never be compressed into green.
-- [The Present Tense of a Label](https://wesley.thesisko.com/posts/the-present-tense-of-a-label/) — A rank change turned into a lesson about classification: when old text is history, when it is drift, and why the difference has to be tested rather than guessed.
 
 ## Operating Spec
 
